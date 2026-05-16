@@ -1,0 +1,161 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.agenda{padding:1rem 0}
+.week-label{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-tertiary);margin:1.5rem 0 .75rem;padding-bottom:6px;border-bottom:.5px solid var(--color-border-tertiary)}
+.day-card{background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);margin-bottom:10px;overflow:hidden}
+.day-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--color-background-secondary);cursor:pointer;user-select:none}
+.day-left{display:flex;align-items:center;gap:10px}
+.day-num{font-size:20px;font-weight:500;color:var(--color-text-primary);min-width:28px}
+.day-name{font-size:13px;color:var(--color-text-secondary)}
+.chevron{font-size:16px;color:var(--color-text-tertiary);transition:transform .2s}
+.chevron.open{transform:rotate(180deg)}
+.day-body{padding:14px;display:none;border-top:.5px solid var(--color-border-tertiary)}
+.day-body.open{display:block}
+.section-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-tertiary);margin-bottom:8px}
+.exam-box{background:#EEEDFE;border:.5px solid #AFA9EC;border-radius:var(--border-radius-md);padding:8px 12px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.exam-box i{font-size:16px;color:#3C3489}
+.exam-name{font-size:14px;font-weight:500;color:#3C3489}
+.no-exam{font-size:13px;color:var(--color-text-tertiary);padding:4px 0;margin-bottom:6px}
+.divider{height:.5px;background:var(--color-border-tertiary);margin:12px 0}
+.study-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.sel-wrap{flex:1;min-width:0}
+.sel-wrap select{width:100%;font-size:15px;height:40px;padding:0 10px;border:.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);text-overflow:ellipsis}
+.sel-wrap input.custom-asig{width:100%;font-size:15px;height:40px;padding:0 10px;border:.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary)}
+.mins-wrap{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.study-mins{width:56px;font-size:13px;height:34px;padding:0 6px;border:.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);text-align:center}
+.mins-label{font-size:12px;color:var(--color-text-secondary);white-space:nowrap}
+.study-del{background:none;border:none;cursor:pointer;font-size:16px;color:var(--color-text-tertiary);padding:0 2px;line-height:1;flex-shrink:0}
+.study-del:hover{color:var(--color-text-danger)}
+.add-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--color-text-secondary);cursor:pointer;background:none;border:.5px dashed var(--color-border-secondary);border-radius:var(--border-radius-md);padding:7px 14px;width:100%;margin-top:2px}
+.add-btn:hover{background:var(--color-background-secondary)}
+.total-bar{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding:7px 12px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)}
+.total-label{font-size:12px;color:var(--color-text-secondary)}
+.total-val{font-size:15px;font-weight:500;color:var(--color-text-primary)}
+</style>
+
+<div class="agenda">
+  <div class="week-label">Semana 1 — 18 al 24</div>
+  <div id="week1"></div>
+  <div class="week-label">Semana 2 — 25 al 31</div>
+  <div id="week2"></div>
+</div>
+
+<script>
+const EXAMS={
+  21:[{name:'Castellano',icon:'ti-book'}],
+  22:[{name:'Tecno',icon:'ti-cpu'}],
+  25:[{name:'Dibujo Técnico',icon:'ti-ruler-2'},{name:'Inglés',icon:'ti-language'}],
+  26:[{name:'Matemáticas',icon:'ti-math-function'},{name:'FIQ',icon:'ti-flask'}],
+  28:[{name:'Catalán',icon:'ti-language'}]
+};
+const ALL_ASIG=['Castellano','Tecno','Dibujo Técnico','Inglés','Matemáticas','FIQ','Catalán','Repaso general'];
+const DAY_NAMES={18:'Lunes',19:'Martes',20:'Miércoles',21:'Jueves',22:'Viernes',23:'Sábado',24:'Domingo',25:'Lunes',26:'Martes',27:'Miércoles',28:'Jueves',29:'Viernes',30:'Sábado',31:'Domingo'};
+const WEEK1=[18,19,20,21,22,23,24];
+const WEEK2=[25,26,27,28,29,30,31];
+const state={};
+
+function gs(d){if(!state[d])state[d]={rows:[{asig:'',mins:''}]};return state[d];}
+
+function buildOptions(day,sel){
+  const exams=(EXAMS[day]||[]).map(e=>e.name);
+  let h='<option value="" disabled '+(sel?'':'selected')+'>Elige asignatura...</option>';
+  if(exams.length){
+    h+=`<optgroup label="Examen de hoy">`;
+    exams.forEach(e=>h+=`<option value="${e}" ${sel===e?'selected':''}>${e}</option>`);
+    h+=`</optgroup><optgroup label="Otras">`;
+  }
+  ALL_ASIG.filter(a=>!exams.includes(a)).forEach(a=>{
+    h+=`<option value="${a}" ${sel===a?'selected':''}>${a}</option>`;
+  });
+  if(exams.length) h+=`</optgroup>`;
+  h+=`<option value="__custom__" ${sel==='__custom__'?'selected':''}>+ Otra...</option>`;
+  return h;
+}
+
+function rowHTML(day,i,r){
+  return `<div class="study-row" id="row-${day}-${i}">
+    <div class="sel-wrap">
+      ${r.asig==='__custom__'
+        ?`<input class="custom-asig" type="text" placeholder="Escribe asignatura..." value="${r.customVal||''}" oninput="gs(${day}).rows[${i}].customVal=this.value">`
+        :`<select onchange="onSelChange(${day},${i},this.value)">${buildOptions(day,r.asig)}</select>`
+      }
+    </div>
+    <div class="mins-wrap">
+      <input class="study-mins" type="number" min="5" max="600" step="5" placeholder="0" value="${r.mins}" oninput="gs(${day}).rows[${i}].mins=this.value;refreshTotal(${day})">
+      <span class="mins-label">min</span>
+    </div>
+    <button class="study-del" onclick="removeRow(${day},${i})" aria-label="Eliminar"><i class="ti ti-x"></i></button>
+  </div>`;
+}
+
+function onSelChange(day,i,val){
+  gs(day).rows[i].asig=val;
+  gs(day).rows[i].customVal='';
+  refreshStudy(day);
+}
+
+function refreshStudy(day){
+  document.getElementById('study-rows-'+day).innerHTML=gs(day).rows.map((r,i)=>rowHTML(day,i,r)).join('');
+  refreshTotal(day);
+}
+
+function addRow(day){gs(day).rows.push({asig:'',mins:''});refreshStudy(day);}
+
+function removeRow(day,i){
+  const rows=gs(day).rows;
+  if(rows.length===1){rows[0]={asig:'',mins:''};refreshStudy(day);return;}
+  rows.splice(i,1);
+  refreshStudy(day);
+}
+
+function refreshTotal(day){
+  const total=gs(day).rows.reduce((a,b)=>a+(parseInt(b.mins)||0),0);
+  const el=document.getElementById('total-'+day);
+  if(!el)return;
+  if(total===0){el.textContent='—';return;}
+  const h=Math.floor(total/60);
+  const m=total%60;
+  el.textContent=h>0?(m>0?`${h}h ${m}min`:`${h}h`):`${m}min`;
+}
+
+function renderDay(day){
+  const exams=EXAMS[day]||[];
+  const hasExams=exams.length>0;
+  const uid='d'+day;
+  const rows=gs(day).rows;
+  const examsHTML=hasExams
+    ?exams.map(e=>`<div class="exam-box"><i class="ti ${e.icon}" aria-hidden="true"></i><span class="exam-name">${e.name}</span></div>`).join('')
+    :`<div class="no-exam">Sin examen</div>`;
+  return `
+    <div class="day-card" id="${uid}">
+      <div class="day-header" onclick="toggleDay('${uid}')">
+        <div class="day-left">
+          <span class="day-num">${day}</span>
+          <span class="day-name">${DAY_NAMES[day]}</span>
+        </div>
+        <i class="ti ti-chevron-down chevron ${hasExams?'open':''}" id="chv-${uid}"></i>
+      </div>
+      <div class="day-body ${hasExams?'open':''}" id="${uid}-body">
+        <div class="section-label">Examen</div>
+        ${examsHTML}
+        <div class="divider"></div>
+        <div class="section-label">Qué estudio hoy</div>
+        <div id="study-rows-${day}">${rows.map((r,i)=>rowHTML(day,i,r)).join('')}</div>
+        <button class="add-btn" onclick="addRow(${day})"><i class="ti ti-plus" aria-hidden="true"></i> Añadir asignatura</button>
+        <div class="total-bar">
+          <span class="total-label">Total tiempo</span>
+          <span class="total-val" id="total-${day}">—</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleDay(uid){
+  document.getElementById(uid+'-body').classList.toggle('open');
+  document.getElementById('chv-'+uid).classList.toggle('open');
+}
+
+document.getElementById('week1').innerHTML=WEEK1.map(renderDay).join('');
+document.getElementById('week2').innerHTML=WEEK2.map(renderDay).join('');
+</script>

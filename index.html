@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7f4ee">
+    <title>Agenda de exámenes</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Mayo · planificación académica</p>
+          <h1>Agenda de exámenes</h1>
+        </div>
+        <div class="topbar-actions" aria-label="Acciones de agenda">
+          <button class="icon-btn" id="exportBtn" type="button" title="Exportar datos" aria-label="Exportar datos">
+            <i class="ti ti-download" aria-hidden="true"></i>
+          </button>
+          <label class="icon-btn" for="importInput" title="Importar datos" aria-label="Importar datos">
+            <i class="ti ti-upload" aria-hidden="true"></i>
+          </label>
+          <input id="importInput" class="sr-only" type="file" accept="application/json">
+          <button class="icon-btn danger" id="resetBtn" type="button" title="Reiniciar agenda" aria-label="Reiniciar agenda">
+            <i class="ti ti-trash" aria-hidden="true"></i>
+          </button>
+        </div>
+      </header>
+
+      <section class="summary-grid" aria-label="Resumen">
+        <article class="metric">
+          <span class="metric-label">Exámenes</span>
+          <strong id="examCount">0</strong>
+        </article>
+        <article class="metric">
+          <span class="metric-label">Tiempo planificado</span>
+          <strong id="plannedTime">0 min</strong>
+        </article>
+        <article class="metric">
+          <span class="metric-label">Sesiones</span>
+          <strong id="sessionCount">0</strong>
+        </article>
+        <article class="metric">
+          <span class="metric-label">Completado</span>
+          <strong id="completionRate">0%</strong>
+        </article>
+      </section>
+
+      <section class="toolbar" aria-label="Filtros">
+        <div class="search-box">
+          <i class="ti ti-search" aria-hidden="true"></i>
+          <input id="searchInput" type="search" placeholder="Buscar día o asignatura">
+        </div>
+        <div class="segmented" role="group" aria-label="Vista">
+          <button class="segment active" type="button" data-filter="all">Todo</button>
+          <button class="segment" type="button" data-filter="exam">Exámenes</button>
+          <button class="segment" type="button" data-filter="study">Estudio</button>
+        </div>
+      </section>
+
+      <section class="agenda" id="agenda" aria-label="Días de agenda"></section>
+      <p class="empty-state" id="emptyState" hidden>No hay días que coincidan con el filtro.</p>
+    </main>
+
+    <template id="rowTemplate">
+      <div class="study-row">
+        <label class="check-wrap" title="Marcar sesión como completada">
+          <input class="study-done" type="checkbox" aria-label="Sesión completada">
+          <span aria-hidden="true"></span>
+        </label>
+        <div class="field select-field"></div>
+        <div class="mins-field">
+          <input class="study-mins" type="number" min="5" max="600" step="5" inputmode="numeric" placeholder="0" aria-label="Minutos">
+          <span>min</span>
+        </div>
+        <button class="icon-btn small remove-row" type="button" title="Eliminar sesión" aria-label="Eliminar sesión">
+          <i class="ti ti-x" aria-hidden="true"></i>
+        </button>
+      </div>
+    </template>
+
+    <script src="assets/js/schedule.js"></script>
+    <script src="assets/js/app.js"></script>
+  </body>
+</html>
